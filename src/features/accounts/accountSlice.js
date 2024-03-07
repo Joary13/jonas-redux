@@ -1,11 +1,51 @@
-export const initialStateAccount = {
+import { createSlice } from '@reduxjs/toolkit';
+
+export const initialState = {
   balance: 0,
   loan: 0,
   loanPurpose: '',
   isLoading: false,
 };
 
-export default function accountReducer(state = initialStateAccount, action) {
+const accountSlice = createSlice({
+  name: 'account',
+  initialState,
+  reducers: {
+    deposit(state, action) {
+      state.balance = state.balance + action.payload;
+    },
+    withdraw(state, action) {
+      state.balance = state.balance - action.payload;
+    },
+    requestLoan: {
+      prepare(amount, purpose) {
+        return { payload: { amount, purpose } };
+      },
+      reducer(state, action) {
+        if (state.loan > 0) return;
+
+        state.balance = state.balance + action.payload.amount;
+        state.loan = action.payload.amount;
+        state.loanPurpose = action.payload.loanPurpose;
+      },
+    },
+    payLoan(state, action) {
+      if (state.balance < state.loan) return;
+      state.balance = state.balance - state.loan;
+      state.loan = 0;
+      state.loanPurpose = '';
+    },
+  },
+});
+
+// console.log(accountSlice);
+
+export const { deposit, payLoan, requestLoan, withdraw } = accountSlice.actions;
+
+export default accountSlice.reducer;
+/*
+
+export default function accountReducer(state = initialState, action) {
   switch (action.type) {
     case 'account/deposit':
       return {
@@ -72,3 +112,4 @@ export function payLoan() {
     type: 'account/payLoan',
   };
 }
+*/
